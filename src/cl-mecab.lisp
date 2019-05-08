@@ -20,9 +20,8 @@
 
 
 (define-foreign-library libmecab
-  #+macports
+  ;;#+macports
   (:darwin "/opt/local/lib/libmecab.dylib")
-  #-macports
   (:darwin "libmecab.dylib")
   (:unix "libmecab.so")
   (:windows "libmecab.dll"))
@@ -58,11 +57,13 @@
      ,@body))
 
 (defmacro with-mecab* ((&optional (option "")) &body body)
-  `(let ((*mecab* (make-mecab ,option)))
-     (mecab_sparse_tostr *mecab* "") ; avoiding MeCab bug
-     (unwind-protect
-          (progn ,@body)
-       (mecab_destroy *mecab*))))
+  (let ((g!opt (gensym "OPT")))
+    `(let* ((,g!opt ,option)
+            (*mecab* (make-mecab ,g!opt)))
+       (mecab_sparse_tostr *mecab* "") ; avoiding MeCab bug
+       (unwind-protect
+            (progn ,@body)
+         (mecab_destroy *mecab*)))))
 
 (defun parse (text &optional (*mecab* *mecab*))
   (mecab_sparse_tostr *mecab* text))
